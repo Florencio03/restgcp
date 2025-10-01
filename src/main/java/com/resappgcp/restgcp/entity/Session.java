@@ -7,6 +7,7 @@ import org.hibernate.annotations.GenericGenerator;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+//Java POJO class
 @Entity
 @Table(name="session")
 public class Session {
@@ -27,8 +28,14 @@ public class Session {
     private UUID id;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist(){
+        //this.id = UUID.randomUUID();
+        createdAt = LocalDateTime.now();
+    }
 
     @Column(name = "mood_summary")
     private String moodSummary;
@@ -41,10 +48,9 @@ public class Session {
 
     public Session() {}
 
-    public Session(LocalDateTime createdAt,
-                   String moodSummary,
-                   String dominanEmotion, String markingStatus) {
-        this.createdAt = createdAt;
+    public Session(String moodSummary,
+                   String dominantEmotion,
+                   String markingStatus) {
         this.moodSummary = moodSummary;
         this.dominantEmotion = dominantEmotion;
         this.markingStatus = markingStatus;
