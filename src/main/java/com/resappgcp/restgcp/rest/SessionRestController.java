@@ -45,7 +45,6 @@ public class SessionRestController {
 
         // also just in case they pass an id in JSON ... set id to null
         // this is to force a save of new item ... instead of update
-        //theSession.setId(null);
 
         Session dbSession = sessionService.save(theSession);
 
