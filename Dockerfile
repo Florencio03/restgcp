@@ -1,8 +1,16 @@
 FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /app
-COPY . .
+
+# Copy the wrapper and give permissions first
+COPY mvnw .
+COPY .mvn .mvn
 RUN chmod +x mvnw
+
+# Copy the rest of the source AFTER fixing mvnw
+COPY . .
+
 RUN ./mvnw clean package -DskipTests
+
 
 FROM eclipse-temurin:21-jre
 WORKDIR /app
