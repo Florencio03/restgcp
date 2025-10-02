@@ -5,10 +5,7 @@ WORKDIR /app
 COPY mvnw .
 COPY .mvn .mvn
 RUN chmod +x mvnw
-
-# Copy the rest of the source AFTER fixing mvnw
 COPY . .
-
 RUN ./mvnw clean package -DskipTests
 
 
