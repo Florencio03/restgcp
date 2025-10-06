@@ -1,0 +1,59 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - '--no-cache'
+      - '-t'
+      - >-
+        $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+      - .
+      - '-f'
+      - Dockerfile
+    id: Build
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - >-
+        $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+    id: Push
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    args:
+      - run
+      - deploy
+      - $_SERVICE_NAME
+      - '--platform=managed'
+      - '--region=$_DEPLOY_REGION'
+      - >-
+        --image=$_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+      - >-
+        --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID
+      - '--add-cloudsql-instances=$_CLOUDSQL_CONNECTION'
+      - >-
+        --set-env-vars=INSTANCE_CONNECTION_NAME=$_CLOUDSQL_CONNECTION,DB_USER=$_DB_USER,DB_PASS=$_DB_PASS,DB_NAME=$_DB_NAME
+      - '--allow-unauthenticated'
+      - '--no-user-output-enabled'
+      - '--quiet'
+    id: Deploy
+    entrypoint: gcloud
+images:
+  - >-
+    $_AR_HOSTNAME/$_AR_PROJECT_ID/$_AR_REPOSITORY/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA
+options:
+  substitutionOption: ALLOW_LOOSE
+  logging: CLOUD_LOGGING_ONLY
+substitutions:
+  _DEPLOY_REGION: northamerica-south1
+  _DB_USER: administrador
+  _DB_NAME: sessionlog
+  _AR_REPOSITORY: cloud-run-source-deploy
+  _PLATFORM: managed
+  _AR_HOSTNAME: northamerica-south1-docker.pkg.dev
+  _SERVICE_NAME: restgcp
+  _CLOUDSQL_CONNECTION: 'profound-jet-473318-j5:northamerica-south1:sessiondb'
+  _DB_PASS: My_1stpassword
+  _TRIGGER_ID: 1f57a46c-7bfd-4daa-a474-b6bd78f1aa7c
+  _AR_PROJECT_ID: profound-jet-473318-j5
+tags:
+  - gcp-cloud-build-deploy-cloud-run
+  - gcp-cloud-build-deploy-cloud-run-managed
+  - restgcp
